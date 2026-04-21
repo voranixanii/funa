@@ -145,7 +145,7 @@ function hideBox() {
 function getTitulo(nivel) {
   if (nivel >= 20) return '💀 ELIMINADO';
   if (nivel >= 15) return '🚨 PELIGRO PÚBLICO';
-  if (nivel >= 10) return '🔥 FUNADO';
+  if (nivel >= 10) return '🔥 FUNADISIMO';
   if (nivel >= 5) return '🤨 SOSPECHOSO';
   return '😇 INOCENTE';
 }
@@ -170,7 +170,7 @@ socket.on('alertaFuna', (data) => {
 
   let texto = "💀 TERRIBLE 💀";
 
-  if (data.nivel === 10) texto = "🔥 FUNA EN PROGRESO 🔥";
+  if (data.nivel === 10) texto = "🔥 UIS 🔥";
   if (data.nivel === 15) texto = "🚨 PELIGRO PÚBLICO 🚨";
   if (data.nivel === 20) texto = "💀 BAN TEMPORAL 💀";
 
