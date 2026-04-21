@@ -14,21 +14,28 @@ body {
   background: transparent;
 }
 
-/* CAJA PRINCIPAL */
+/* FUNA BOX */
 #funaBox {
   position: absolute;
   bottom: 80px;
   left: 50px;
-  background: linear-gradient(135deg, #7b2cff, #ff6a00);
+  background: linear-gradient(135deg, #7b2cff, #8f0000);
   padding: 20px 30px;
   border-radius: 20px;
   color: white;
   box-shadow: 0 0 25px rgba(123,44,255,0.7);
-  min-width: 300px;
-  animation: slideIn 0.5s ease;
+  min-width: 320px;
+
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.4s ease;
 }
 
-/* TEXTO */
+#funaBox.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 #user {
   font-size: 26px;
   font-weight: bold;
@@ -41,8 +48,8 @@ body {
 }
 
 #contador {
-  margin-top: 10px;
-  font-size: 18px;
+  margin-top: 8px;
+  font-size: 16px;
 }
 
 /* ALERTA */
@@ -52,26 +59,44 @@ body {
   width: 100%;
   text-align: center;
   font-size: 70px;
-  color: red;
   display: none;
   text-shadow: 0 0 20px red;
-  animation: boom 0.4s ease;
+  animation: boom 0.3s ease;
+}
+
+/* PROMO */
+#promoBox {
+  position: absolute;
+  top: 80px;
+  right: 50px;
+  background: rgba(0,0,0,0.85);
+  padding: 15px;
+  border-radius: 15px;
+  display: none;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+}
+
+#promoAvatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+}
+
+#promoText {
+  color: white;
+  font-size: 18px;
 }
 
 /* ANIMACIONES */
-@keyframes slideIn {
-  from { transform: translateX(-200px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
 @keyframes boom {
-  from { transform: scale(0.5); }
+  from { transform: scale(0.6); }
   to { transform: scale(1); }
 }
 
-/* EFECTO FLASH */
 .flash {
-  animation: flashBg 0.3s alternate 6;
+  animation: flashBg 0.2s alternate 6;
 }
 
 @keyframes flashBg {
@@ -83,17 +108,19 @@ body {
 
 <body>
 
-<!-- CAJA FUNA -->
 <div id="funaBox">
   <div id="user">Esperando funa...</div>
   <div id="motivo"></div>
   <div id="contador"></div>
 </div>
 
-<!-- ALERTA -->
 <div id="alerta">💀 FUNA MÁXIMA 💀</div>
 
-<!-- SONIDO -->
+<div id="promoBox">
+  <img id="promoAvatar">
+  <div id="promoText"></div>
+</div>
+
 <audio id="sonido" src="https://www.myinstants.com/media/sounds/vine-boom.mp3"></audio>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -102,27 +129,54 @@ body {
 const socket = io({
   transports: ['websocket'],
   reconnection: true,
-  reconnectionAttempts: Infinity,
-  reconnectionDelay: 1000
+  reconnectionAttempts: Infinity
 });
 
-// FUNA NORMAL
+let box = document.getElementById('funaBox');
+
+function showBox() {
+  box.classList.add('show');
+}
+
+function hideBox() {
+  box.classList.remove('show');
+}
+
+function getTitulo(nivel) {
+  if (nivel >= 20) return '💀 ELIMINADO';
+  if (nivel >= 15) return '🚨 PELIGRO PÚBLICO';
+  if (nivel >= 10) return '🔥 FUNADO';
+  if (nivel >= 5) return '🤨 SOSPECHOSO';
+  return '😇 INOCENTE';
+}
+
+// FUNA
 socket.on('nuevaFuna', (data) => {
+  showBox();
+
   document.getElementById('user').innerText = `🚨 ${data.user}`;
   document.getElementById('motivo').innerText = data.motivo;
-  document.getElementById('contador').innerText = `Nivel de funa: ${data.total}`;
+  document.getElementById('contador').innerText =
+    `Nivel: ${data.total} | ${getTitulo(data.total)}`;
 
-  // sonido
   const audio = document.getElementById('sonido');
   audio.currentTime = 0;
   audio.play().catch(() => {});
 });
 
-// ALERTA FUNA MAX
-socket.on('alertaFuna', () => {
+// ALERTAS
+socket.on('alertaFuna', (data) => {
   const alerta = document.getElementById('alerta');
 
+  let texto = "💀 TERRIBLE 💀";
+
+  if (data.nivel === 10) texto = "🔥 FUNA EN PROGRESO 🔥";
+  if (data.nivel === 15) texto = "🚨 PELIGRO PÚBLICO 🚨";
+  if (data.nivel === 20) texto = "💀 BAN TEMPORAL 💀";
+
+  alerta.innerText = texto;
   alerta.style.display = 'block';
+
   document.body.classList.add('flash');
 
   setTimeout(() => {
@@ -131,17 +185,35 @@ socket.on('alertaFuna', () => {
   }, 3000);
 });
 
-// DEBUG (opcional)
-socket.on('connect', () => {
-  console.log('🟢 Conectado al overlay');
+// PROMO
+socket.on('promo', (data) => {
+  const box = document.getElementById('promoBox');
+
+  document.getElementById('promoAvatar').src = data.avatar;
+
+  document.getElementById('promoText').innerText =
+    data.raid
+      ? `🔥 RAID de ${data.user} (${data.viewers}) 🔥`
+      : `¡Sigan a ${data.user}! 🔥`;
+
+  box.style.display = 'flex';
+
+  setTimeout(() => {
+    box.style.display = 'none';
+  }, 7000);
 });
 
-socket.on('disconnect', () => {
-  console.log('🔴 Desconectado...');
-});
-
+// RESET
 socket.on('resetFunas', () => {
+  hideBox();
   document.getElementById('user').innerText = 'Esperando funa...';
+  document.getElementById('motivo').innerText = '';
+  document.getElementById('contador').innerText = '';
+});
+
+socket.on('resetUser', (data) => {
+  showBox();
+  document.getElementById('user').innerText = `${data.user} fue perdonado 🙏`;
   document.getElementById('motivo').innerText = '';
   document.getElementById('contador').innerText = '';
 });
