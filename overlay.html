@@ -139,6 +139,12 @@ socket.on('connect', () => {
 socket.on('disconnect', () => {
   console.log('🔴 Desconectado...');
 });
+
+socket.on('resetFunas', () => {
+  document.getElementById('user').innerText = 'Esperando funa...';
+  document.getElementById('motivo').innerText = '';
+  document.getElementById('contador').innerText = '';
+});
 </script>
 
 </body>

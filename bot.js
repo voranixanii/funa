@@ -83,6 +83,38 @@ client.on('message', (channel, tags, message, self) => {
         io.emit('alertaFuna', { user: target, nivel: 20 });
     }
   }
+  if (message === '!resetfunas') {
+  // verificar permisos (mod o streamer)
+  if (tags.mod || tags.badges?.broadcaster) {
+    funas = {};
+    fs.writeFileSync('funas.json', JSON.stringify(funas, null, 2));
+
+    client.say(channel, '🧹 Funas reiniciadas');
+    io.emit('resetFunas'); // opcional para overlay
+  } else {
+    client.say(channel, `❌ ${tags.username}, no tienes permisos`);
+  }
+}
+
+if (message === '!topfunados') {
+  const ranking = Object.entries(funas)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+
+  if (ranking.length === 0) {
+    client.say(channel, '📊 No hay funas aún');
+    return;
+  }
+
+  let texto = '🏆 Top funados: ';
+
+  ranking.forEach(([user, count], index) => {
+    texto += `${index + 1}. ${user} (${count}) `;
+  });
+
+  client.say(channel, texto);
+}
+
 });
 
 // ===== SERVIDOR PARA OVERLAY =====
