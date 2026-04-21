@@ -1,0 +1,19 @@
+{
+  "name": "api-funa",
+  "version": "1.0.0",
+  "description": "Bot de funas para Twitch",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3",
+    "tmi.js": "^1.8.5"
+  }
+}
