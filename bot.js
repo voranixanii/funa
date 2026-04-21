@@ -64,10 +64,23 @@ client.on('message', (channel, tags, message, self) => {
 
     // alerta especial
     if (funas[target] === 5) {
-      client.say(channel, `⚠️ ${target} alcanzó NIVEL MÁXIMO DE FUNA 💀`);
-      io.emit('alertaFuna', {
-        user: target
-      });
+        client.say(channel, `⚠️ ${target} alcanzó NIVEL 5 DE FUNA 💀`);
+        io.emit('alertaFuna', { user: target, nivel: 5 });
+      }
+
+      if (funas[target] === 10) {
+        client.say(channel, `🔥 ${target} está totalmente FUNADO (10)`);
+        io.emit('alertaFuna', { user: target, nivel: 10 });
+      }
+
+      if (funas[target] === 15) {
+        client.say(channel, `🚨 ${target} es una AMENAZA PÚBLICA (15)`);
+        io.emit('alertaFuna', { user: target, nivel: 15 });
+      }
+
+      if (funas[target] === 20) {
+        client.say(channel, `💀💀 ${target} HA SIDO ELIMINADO DEL CHAT (20)`);
+        io.emit('alertaFuna', { user: target, nivel: 20 });
     }
   }
 });
