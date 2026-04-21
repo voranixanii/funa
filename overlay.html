@@ -4,36 +4,40 @@
 <meta charset="UTF-8">
 <title>Funa Overlay PRO</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
 <style>
 body {
   margin: 0;
-  font-family: 'Orbitron', sans-serif;
   overflow: hidden;
+  font-family: 'Orbitron', sans-serif;
   background: transparent;
 }
 
-/* CONTENEDOR */
+/* CAJA PRINCIPAL */
 #funaBox {
   position: absolute;
   bottom: 80px;
   left: 50px;
-  background: linear-gradient(135deg, #7b2cff, #c50000);
+  background: linear-gradient(135deg, #7b2cff, #ff6a00);
   padding: 20px 30px;
   border-radius: 20px;
   color: white;
-  box-shadow: 0 0 25px rgba(123,44,255,0.6);
+  box-shadow: 0 0 25px rgba(123,44,255,0.7);
+  min-width: 300px;
   animation: slideIn 0.5s ease;
 }
 
 /* TEXTO */
 #user {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: bold;
 }
 
 #motivo {
   font-size: 16px;
   opacity: 0.9;
+  margin-top: 5px;
 }
 
 #contador {
@@ -47,11 +51,11 @@ body {
   top: 35%;
   width: 100%;
   text-align: center;
-  font-size: 60px;
+  font-size: 70px;
   color: red;
   display: none;
-  animation: boom 0.4s ease;
   text-shadow: 0 0 20px red;
+  animation: boom 0.4s ease;
 }
 
 /* ANIMACIONES */
@@ -64,36 +68,76 @@ body {
   from { transform: scale(0.5); }
   to { transform: scale(1); }
 }
+
+/* EFECTO FLASH */
+.flash {
+  animation: flashBg 0.3s alternate 6;
+}
+
+@keyframes flashBg {
+  from { background: rgba(255,0,0,0.1); }
+  to { background: rgba(255,0,0,0.4); }
+}
 </style>
 </head>
 
 <body>
 
+<!-- CAJA FUNA -->
 <div id="funaBox">
   <div id="user">Esperando funa...</div>
   <div id="motivo"></div>
   <div id="contador"></div>
 </div>
 
+<!-- ALERTA -->
 <div id="alerta">💀 FUNA MÁXIMA 💀</div>
 
-<script src="/socket.io/socket.io.js"></script>
-<script>
-const socket = io();
+<!-- SONIDO -->
+<audio id="sonido" src="https://www.myinstants.com/media/sounds/vine-boom.mp3"></audio>
 
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+const socket = io({
+  transports: ['websocket'],
+  reconnection: true,
+  reconnectionAttempts: Infinity,
+  reconnectionDelay: 1000
+});
+
+// FUNA NORMAL
 socket.on('nuevaFuna', (data) => {
   document.getElementById('user').innerText = `🚨 ${data.user}`;
   document.getElementById('motivo').innerText = data.motivo;
   document.getElementById('contador').innerText = `Nivel de funa: ${data.total}`;
+
+  // sonido
+  const audio = document.getElementById('sonido');
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
 });
 
+// ALERTA FUNA MAX
 socket.on('alertaFuna', () => {
   const alerta = document.getElementById('alerta');
+
   alerta.style.display = 'block';
+  document.body.classList.add('flash');
 
   setTimeout(() => {
     alerta.style.display = 'none';
+    document.body.classList.remove('flash');
   }, 3000);
+});
+
+// DEBUG (opcional)
+socket.on('connect', () => {
+  console.log('🟢 Conectado al overlay');
+});
+
+socket.on('disconnect', () => {
+  console.log('🔴 Desconectado...');
 });
 </script>
 
